@@ -4,18 +4,16 @@ from config import ADVERTS_URL
 
 
 async def fetch_pages(page_number: int = 1):
-    _url = ADVERTS_URL
-    if page_number > 1:
-        _url += f"?page={page_number}"
+    _url = f"ADVERTS_URL{f"?page={page_number}"}"
     async with httpx.AsyncClient() as client:
         response = await client.get(_url)
 
         if response.status_code == 200:
-            return response.content
-
             print("Got HTML content from page ", page_number)
+            return response.content
         else:
             print("Failed to retrieve the web page. Status code:", response.status_code)
+
 
 # async def main():
 

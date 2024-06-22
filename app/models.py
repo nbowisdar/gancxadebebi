@@ -1,15 +1,23 @@
 from pydantic import BaseModel
 
 
-class AdvertBase(BaseModel):
+class AdvertInner(BaseModel):
     subcategory: str
     category: str
     phone_numbers: list[str]
 
 
-class AdvertFull(AdvertBase):
-    region: str = ""
-    city: str = ""
+class AdvertOuter(BaseModel):
+    id: str | None
+    title: str | None
+    url: str | None
+    city: str | None
+    date: str | None
+    # region: str = ""
+
+
+class AdvertFull(AdvertInner, AdvertOuter):
+    pass
 
 
 """{
