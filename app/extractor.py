@@ -9,24 +9,24 @@ def get_or_none(soup: BeautifulSoup, class_: str) -> str | None:
         return element.text
 
 
-def _get_number(soup: BeautifulSoup) -> str:
-    return soup.find(class_="cc").text
-
-
-def _get_category_and_subcategory(soup: BeautifulSoup) -> tuple[str, str]:
-    category, subcategory = soup.find(class_="asr").text.split(" >> ")
-    return category, subcategory
+def _get_category_and_subcategory(soup: BeautifulSoup) -> tuple[str, str] | tuple[None, None]:
+    if element := soup.find(class_="asr"):
+        try:
+            category, subcategory = element.text.split(" >> ")
+            return category, subcategory
+        except ValueError:
+            pass
+    return None, None
 
 
 def extract_data_from_inner_page(html_content: str) -> AdvertInner:
     soup = BeautifulSoup(html_content, 'html.parser')
-    number = _get_number(soup)
     category, subcategory = _get_category_and_subcategory(soup)
 
     return AdvertInner(
         category=category,
         subcategory=subcategory,
-        phone_numbers=[number]
+        phone_numbers=[get_or_none(soup, "cc")]
     )
 
 
@@ -59,6 +59,7 @@ def extract_data_from_outer_page(html_content: str) -> list[AdvertOuter]:
         if data := _extract_single_outer(ad):
             out_data.append(data)
     return out_data
+
 
 if __name__ == '__main__':
     with open('outer.html', 'r', encoding='utf-8') as file:

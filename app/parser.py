@@ -41,10 +41,9 @@ class PageManager:
     async def visit_page(self, advert: AdvertOuter) -> AdvertFull:
         if not self.is_ready:
             raise Exception("Pages are not ready")
-        #     await self.open_pages()
         if not self.ready_pages:
-            print("Too many pages are busy. Waiting...")
-            await asyncio.sleep(3)
+            # print("Too many pages are busy. Waiting...")
+            await asyncio.sleep(1)
             return await self.visit_page(advert)
         page = self.get_page()
         print(f"Visiting {advert.url}...")
@@ -57,6 +56,7 @@ class PageManager:
 
         data = extract_data_from_inner_page(content)
         full = AdvertFull(**data.dict(), **advert.dict())
+        full.to_latin()
         # print(full.dict())
         return full
 
@@ -67,6 +67,7 @@ class PageManager:
 
 class Parser:
     context: BrowserContext
+    page_manager: PageManager
     is_active: bool = False
 
     def __init__(self, browser: Browser):
@@ -78,24 +79,27 @@ class Parser:
             'User-Agent': UserAgent().random
         }
 
-    async def run(self, adverts: list[AdvertOuter]):
+    async def start(self):
         context = await self.browser.new_context(
             java_script_enabled=True
         )
-        page_manager = PageManager(context)
-        await page_manager.start()
+        self.page_manager = PageManager(context)
+        await self.page_manager.start()
+
+    async def run(self, adverts: list[AdvertOuter]):
+
         # Run tasks concurrently
         tasks = []
         for adv in adverts:
             tasks.append(
-                page_manager.visit_page(adv)
+                self.page_manager.visit_page(adv)
             )
         result = await asyncio.gather(*tasks)
         print("DONE")
         time.sleep(2)
         return result
 
-    async def fetch_outer_page(self, page_number: int = 1) -> str:
+    async def fetch_outer_page(self, page_number: int = 1) -> str | None:
         _url = ADVERTS_URL
         if page_number > 1:
             _url += f"?page={page_number}"
@@ -104,7 +108,7 @@ class Parser:
             if response.status_code == 200:
                 print("Got HTML content from page ", page_number)
                 return str(response.content)
-            raise Exception("Failed to retrieve the web page. Status code:", response.status_code)
+            print("Failed to retrieve the web page. Status code:")
 
 
 @asynccontextmanager
@@ -113,6 +117,7 @@ async def get_parser() -> AsyncGenerator[Parser, None]:
         try:
             browser = await playwright.chromium.launch(headless=False)
             parser = Parser(browser)
+            await parser.start()
             yield parser
         finally:
             await browser.close()

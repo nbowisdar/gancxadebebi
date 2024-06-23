@@ -2,18 +2,37 @@ from pydantic import BaseModel
 
 
 class AdvertInner(BaseModel):
-    subcategory: str
-    category: str
-    phone_numbers: list[str]
+    subcategory: str | None = None
+    category: str | None = None
+    phone_numbers: list[str] = []
 
 
 class AdvertOuter(BaseModel):
-    id: str | None
-    title: str | None
-    url: str | None
-    city: str | None
-    date: str | None
-    # region: str = ""
+    id: str | None = None
+    title: str | None = None
+    url: str | None = None
+    city: str | None = None
+    date: str | None = None
+
+    @staticmethod
+    def _to_latin(text: str) -> str:
+        return text.encode('latin1').decode('unicode_escape').encode('latin1').decode('utf-8')
+
+    def to_latin(self):
+        if self.id:
+            self.id = self._to_latin(self.id)
+
+        if self.title:
+            self.title = self._to_latin(self.title)
+
+        if self.url:
+            self.url = self._to_latin(self.url)
+
+        if self.city:
+            self.city = self._to_latin(self.city)
+
+        if self.date:
+            self.date = self._to_latin(self.date)
 
 
 class AdvertFull(AdvertInner, AdvertOuter):
