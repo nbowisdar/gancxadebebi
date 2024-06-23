@@ -60,17 +60,6 @@ def extract_data_from_outer_page(html_content: str) -> list[AdvertOuter]:
             out_data.append(data)
     return out_data
 
-
-def get_city(html_content: str) -> str:
-    soup = BeautifulSoup(html_content, 'html.parser')
-    return soup.find(class_="av").text
-
-
-def get_data(html_content: str) -> str:
-    soup = BeautifulSoup(html_content, 'html.parser')
-    return soup.find(class_="ad").text
-
-
 if __name__ == '__main__':
     with open('outer.html', 'r', encoding='utf-8') as file:
         content = file.read()
