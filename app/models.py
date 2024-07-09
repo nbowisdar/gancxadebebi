@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AdvertInner(BaseModel):
     subcategory: str | None = None
     category: str | None = None
-    phone_numbers: list[str] = []
+    phone_numbers: list[str | None] = Field(default_factory=list)
 
 
 class AdvertOuter(BaseModel):

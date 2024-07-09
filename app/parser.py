@@ -9,8 +9,8 @@ from fake_useragent import UserAgent
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 
 from app.extractor import extract_data_from_inner_page
-from app.models import AdvertOuter, AdvertInner, AdvertFull
-from config import MAX_PAGES, ADVERTS_URL
+from app.models import AdvertOuter, AdvertFull
+from config import MAX_PAGES, ADVERTS_URL, HEADLESS_BROWSER
 
 
 @dataclass
@@ -50,9 +50,9 @@ class PageManager:
         await page.goto(advert.url)
         await page.wait_for_load_state("domcontentloaded")
         content = await page.content()
+        print(f"Got HTML content from {advert.url}")
 
         self.release_page(page)
-        print(f"Got HTML content from {advert.url}")
 
         data = extract_data_from_inner_page(content)
         full = AdvertFull(**data.dict(), **advert.dict())
@@ -95,7 +95,6 @@ class Parser:
                 self.page_manager.visit_page(adv)
             )
         result = await asyncio.gather(*tasks)
-        print("DONE")
         time.sleep(2)
         return result
 
@@ -115,7 +114,7 @@ class Parser:
 async def get_parser() -> AsyncGenerator[Parser, None]:
     async with async_playwright() as playwright:
         try:
-            browser = await playwright.chromium.launch(headless=False)
+            browser = await playwright.chromium.launch(headless=HEADLESS_BROWSER)
             parser = Parser(browser)
             await parser.start()
             yield parser
