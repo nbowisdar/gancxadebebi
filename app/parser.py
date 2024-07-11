@@ -29,7 +29,7 @@ class PageManager:
         self.is_ready = True
 
     def release_page(self, page: Page):
-        print(self.busy_pages, page)
+        # print(self.busy_pages, page)
         self.busy_pages.remove(page)
         self.ready_pages.append(page)
 
@@ -101,7 +101,6 @@ class Parser:
     @staticmethod
     def visited_url_is_correct(url, expected_url: str) -> bool:
         # Define the regular expression pattern to match the page number
-        print("CHECK URL", url)
         if "page=" not in expected_url:
             return True
 
@@ -117,7 +116,6 @@ class Parser:
         _adv_url = self._adv_url
         if page_number > 1:
             _adv_url += f"?page={page_number}"
-        print(f" pg_number {page_number} {_adv_url = }")
         async with httpx.AsyncClient(headers=self.headers) as client:
             response = await client.get(_adv_url, follow_redirects=True)
 

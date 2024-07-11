@@ -11,6 +11,6 @@ RESULT_DIR = BASE_DIR / "results"
 RESULT_DIR.mkdir(exist_ok=True)
 
 # Script configuration
-MAX_PAGES = 5
+MAX_PAGES = 25
 RUN_SCRIPT_EVERY_HOUR = 24
 HEADLESS_BROWSER = True

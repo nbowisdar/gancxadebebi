@@ -36,7 +36,6 @@ def save_data_to_db(data: dict | list):
 async def pars_one_url_cat(url: str):
     async with get_parser(url) as parser:
         c = 1
-        print("Starting... with url: ", url)
         start_time_main = time.perf_counter()
         while True:
             print("Fetching page ", c)
@@ -55,7 +54,6 @@ async def pars_one_url_cat(url: str):
             # TODO save data to the db when url will be ready
             # save_data_to_db(json_data)
             c += 1
-            # print(f"DONE CYCLE {c} with adverts {len(json_data)} in {time.perf_counter() - start:.2f} seconds")
         print(f"Finished in {time.perf_counter() - start_time_main:.2f} seconds")
 
 
