@@ -50,7 +50,6 @@ class PageManager:
         await page.goto(advert.url)
         await page.wait_for_load_state("domcontentloaded")
         content = await page.content()
-        print(f"Got HTML content from {advert.url}")
 
         self.release_page(page)
 
@@ -70,8 +69,9 @@ class Parser:
     page_manager: PageManager
     is_active: bool = False
 
-    def __init__(self, browser: Browser):
+    def __init__(self, browser: Browser, _adv_url: str = ADVERTS_URL):
         self.browser = browser
+        self._adv_url = _adv_url
 
     @property
     def headers(self):
@@ -98,24 +98,42 @@ class Parser:
         time.sleep(2)
         return result
 
+    @staticmethod
+    def visited_url_is_correct(url, expected_url: str) -> bool:
+        # Define the regular expression pattern to match the page number
+        print("CHECK URL", url)
+        if "page=" not in expected_url:
+            return True
+
+        expected_page = expected_url.split("=")[-1]
+        real_page = url.params.get("page")
+
+        if expected_page == real_page:
+            return True
+
+        return False
+
     async def fetch_outer_page(self, page_number: int = 1) -> str | None:
-        _url = ADVERTS_URL
+        _adv_url = self._adv_url
         if page_number > 1:
-            _url += f"?page={page_number}"
+            _adv_url += f"?page={page_number}"
+        print(f" pg_number {page_number} {_adv_url = }")
         async with httpx.AsyncClient(headers=self.headers) as client:
-            response = await client.get(_url)
+            response = await client.get(_adv_url, follow_redirects=True)
+
+            if not self.visited_url_is_correct(response.url, _adv_url):
+                return None
             if response.status_code == 200:
-                print("Got HTML content from page ", page_number)
                 return str(response.content)
-            print("Failed to retrieve the web page. Status code:")
+            print("Failed to retrieve the web page. Status code:", response.status_code)
 
 
 @asynccontextmanager
-async def get_parser() -> AsyncGenerator[Parser, None]:
+async def get_parser(adv_url: str = ADVERTS_URL) -> AsyncGenerator[Parser, None]:
     async with async_playwright() as playwright:
         try:
             browser = await playwright.chromium.launch(headless=HEADLESS_BROWSER)
-            parser = Parser(browser)
+            parser = Parser(browser, adv_url)
             await parser.start()
             yield parser
         finally:

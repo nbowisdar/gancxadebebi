@@ -53,7 +53,7 @@ def extract_data_from_outer_page(html_content: str) -> list[AdvertOuter]:
     for ul in soup.find_all(class_="ua"):
         adverts.extend(ul.find_all('li'))
 
-    print(len(adverts))
+    print(f"{len(adverts) = }")
     out_data = []
     for ad in adverts:
         if data := _extract_single_outer(ad):
