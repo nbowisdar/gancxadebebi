@@ -62,15 +62,21 @@ def improve_one(data: dict):
         region, city = data["city"].split(">>")
         data["region"] = region.strip()
         data["city"] = city.strip()
-    else:
-        data["region"] = None
+        if not region and city == "Тбилиси":
+            data["region"] = "Тбилиси"
+        else:
+            data["region"] = None
 
     better_phones = []
     for phones in data["phone_numbers"]:
         if phones:
             for phone in phones.split(","):
-                bettee_phone = phone.replace(")", "").replace("(", "").replace(" ", "")
-                better_phones.append(bettee_phone)
+                bettee_phone = phone.replace(")", "").replace("(", "").replace(" ", "").replace("-", "")
+                if bettee_phone.isdigit():
+                    if len(bettee_phone) == 9:
+                        bettee_phone = f"+995{bettee_phone}"
+                    if len(bettee_phone) == 13:
+                        better_phones.append(bettee_phone)
 
     data["phone_numbers"] = better_phones
     data["date"] = clean_date(data["date"])

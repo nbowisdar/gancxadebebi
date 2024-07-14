@@ -129,8 +129,8 @@ class Parser:
 @asynccontextmanager
 async def get_parser(adv_url: str = ADVERTS_URL) -> AsyncGenerator[Parser, None]:
     async with async_playwright() as playwright:
+        browser = await playwright.chromium.launch(headless=HEADLESS_BROWSER)
         try:
-            browser = await playwright.chromium.launch(headless=HEADLESS_BROWSER)
             parser = Parser(browser, adv_url)
             await parser.start()
             yield parser
